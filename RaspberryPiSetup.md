@@ -73,3 +73,14 @@ cd seeed-voicecard
 sudo ./install.sh
 sudo reboot now
 ```
+
+## Grove
+
+### Base
+
+- https://wiki.seeedstudio.com/Grove_Base_Hat_for_Raspberry_Pi/#installation
+
+### Temperature & Humidity Sensor (SHT31) 
+
+- https://wiki.seeedstudio.com/Grove-TempAndHumi_Sensor-SHT31/
+- https://github.com/Seeed-Studio/Grove_SHT31_Temp_Humi_Sensor
