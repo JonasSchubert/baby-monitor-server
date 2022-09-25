@@ -14,7 +14,7 @@
     "url": "https://code.sinthu-und-jonas.de/jsa/baby-monitor/server.git"
   },
   "scripts": {
-    "dev": "nodemon server.js",
+    "dev": "nodemon src/server.js",
     "pre-commit": "exit 0",
     "pre-push": "exit 0",
     "prepare": "is-ci || husky install"
