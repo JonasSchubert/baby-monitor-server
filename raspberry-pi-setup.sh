@@ -20,10 +20,7 @@ sudo sh get-docker.sh
 # sudo usermod -aG docker ${USER} # Not working in script
 
 # Install docker-compose
-sudo apt-get install -y libffi-dev libssl-dev
-sudo apt install -y python3-dev
-sudo apt-get install -y python3 python3-pip
-sudo pip3 install docker-compose
+sudo apt-get install docker-compose-plugin
 
 # Install Respeaker
 cd ~
