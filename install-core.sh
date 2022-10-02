@@ -52,5 +52,5 @@ make
 sudo make install
 sudo make configs
 
-# Back to project root
-cd ${PROJECTROOT}
+sudo cp janus.plugin.streaming.cfg /opt/janus/etc/janus/janus.plugin.streaming.cfg
+sudo sed -i "/^exit 0$/ i modprobe bcm2835-v4l2" /etc/rc.local
