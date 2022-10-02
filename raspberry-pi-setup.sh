@@ -2,8 +2,8 @@
 
 # Update and cleanup system
 sudo apt update -y
-sudo apt upgade -y
-sudo apt dist-upgade -y
+sudo apt upgrade -y
+sudo apt dist-upgrade -y
 sudo apt autoremove -y
 
 # Install node v16
