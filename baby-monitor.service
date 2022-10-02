@@ -1,0 +1,13 @@
+[Unit]
+Description=Baby Monitor
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python BabyMonitor.py
+WorkingDirectory=/home/jonasschubert/projects/server/
+StandardOutput=inherit
+StandardError=inherit
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
