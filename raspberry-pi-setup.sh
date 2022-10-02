@@ -17,7 +17,7 @@ sudo apt install -y build-essential git
 # Install docker
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
-sudo usermod -aG docker ${USER}
+# sudo usermod -aG docker ${USER} # Not working in script
 
 # Install docker-compose
 sudo apt-get install -y libffi-dev libssl-dev
