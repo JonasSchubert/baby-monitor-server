@@ -1,8 +1,18 @@
 # Baby Monitor - Server
 
-The server for my baby monitor.
+The server for my baby monitor. It utilizes [gstreamer](https://gstreamer.freedesktop.org/), [Grove SHT31 Temperature Humidity Sensor](https://github.com/Seeed-Studio/Grove_SHT31_Temp_Humi_Sensor), a simple USB microphone with some python code to provide a video and audio stream with an sensor API to check on your newborn.
 
-## Contributors
+## Instructions
+
+### Raspberry Pi
+
+If you start with a fresh Raspberry Pi installation have a look at the [raspberry pi setup](./raspberry-pi-setup.sh) script. It might be useful for you, but is a bit outdated since I moved from a node API to a python project.
+
+### API
+
+> TODO
+
+## Author
 
 | [<img alt="JonasSchubert" src="https://secure.gravatar.com/avatar/835215bfb654d58acb595c64f107d052?s=180&d=identicon" width="117"/>](https://code.sinthu-und-jonas.de/jonas-schubert) |
 | :---------------------------------------------------------------------------------------------------------------------------------------: |
