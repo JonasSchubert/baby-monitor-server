@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 ExecStart=/usr/bin/python BabyMonitor.py
-WorkingDirectory=/home/jonasschubert/projects/server/
+WorkingDirectory=/home/jonasschubert/projects/server/src/
 StandardOutput=inherit
 StandardError=inherit
 Restart=no

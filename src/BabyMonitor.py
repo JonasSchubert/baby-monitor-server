@@ -6,15 +6,13 @@ from twisted.web import server, resource
 from twisted.web.static import File
 from zope.interface import implementer
 
-import re
 from datetime import datetime, timedelta
-import json
 import subprocess
 
-from ProcessProtocolUtils import spawnNonDaemonProcess, TerminalEchoProcessProtocol
-from ZeroConfUtils import startZeroConfServer
+from ProcessProtocolUtils import spawnNonDaemonProcess
 from LoggingUtils import log, setupLogging, LoggingProtocol
-from Config import Config
+from ClimateResource import ClimateResource
+from PingResource import PingResource
 
 def async_sleep(seconds):
     d = defer.Deferred()
@@ -86,7 +84,7 @@ class JpegProducer(object):
         self.isStopped = True
         log('producer is requesting to be stopped')
 
-MJPEG_SEP = '--spionisto\r\n'
+MJPEG_SEP = b'--spionisto\r\n'
 
 class JpegStreamReader(protocol.Protocol):
     def __init__(self):
@@ -94,7 +92,7 @@ class JpegStreamReader(protocol.Protocol):
 
     def connectionMade(self):
         log('MJPEG Image stream received')
-        self.data = ''
+        self.data = b''
         self.tnow = datetime.now()
         self.cumDataLen = 0
         self.cumCalls = 0
@@ -129,92 +127,6 @@ class JpegStreamReader(protocol.Protocol):
             self.cumDataLen = 0
             self.cumCalls = 0
 
-class MotionDetectionStatusReaderProtocol(TerminalEchoProcessProtocol):
-    PAT_STATUS = re.compile(r'(\d) (\d)')
-
-    def __init__(self, app):
-        TerminalEchoProcessProtocol.__init__(self)
-        self.motionDetected = False
-        self.motionSustained = False
-        self.app = app
-
-    def outLineReceived(self, line):
-        if line.startswith('MOTION_DETECTOR_READY'):
-            self.app.startGstreamerVideo()
-
-        if self.PAT_STATUS.match(line):
-            (self.motionDetected, self.motionSustained) = [int(word) for word in line.split()]
-        else:
-            log('MotionDetector: %s' % line)
-
-    def errLineReceived(self, line):
-        log('MotionDetector: error: %s' % line)
-
-    def reset(self):
-        self.transport.write('reset\n')
-
-class StatusResource(resource.Resource):
-    def __init__(self, app):
-        self.app = app
-        self.motionDetectorStatusReader = self.app.motionDetectorStatusReader
-
-    def render_GET(self, request):
-        request.setHeader("content-type", 'application/json')
-
-        motion = 0
-        motionReason = "none"
-        if self.motionDetectorStatusReader.motionSustained:
-            motion = 1
-            motionReason = "(motion detected on camera)"
-
-        status = {
-            'motion': motion,
-            'motionReason': motionReason
-        }
-        return json.dumps(status)
-
-class PingResource(resource.Resource):
-    def render_GET(self, request):
-        request.setHeader("content-type", 'application/json')
-        request.setHeader("Access-Control-Allow-Origin", '*')
-
-        status = {'status': 'ready'}
-        return json.dumps(status)
-
-class GetConfigResource(resource.Resource):
-    def __init__(self, app):
-        self.app = app
-
-    def render_GET(self, request):
-        request.setHeader("content-type", 'application/json')
-
-        status = {}
-        for paramName in self.app.config.paramNames:
-            status[paramName] = getattr(self.app.config, paramName)
-
-        return json.dumps(status)
-
-class UpdateConfigResource(resource.Resource):
-    def __init__(self, app):
-        self.app = app
-
-    def render_GET(self, request):
-        log('Got request to change parameters to %s' % request.args)
-
-        for paramName in self.app.config.paramNames:
-            # a bit of defensive coding. We really should not be getting
-            # some random data here.
-            if paramName in request.args:
-                paramVal = int(request.args[paramName][0])
-                log('setting %s to %d' % (paramName, paramVal))
-                setattr(self.app.config, paramName, paramVal)
-
-        self.app.resetAfterConfigUpdate()
-
-        request.setHeader("content-type", 'application/json')
-        status = {'status': 'done'}
-        return json.dumps(status)
-
 def startAudio():
     spawnNonDaemonProcess(reactor, LoggingProtocol('janus'), '/opt/janus/bin/janus', ['janus', '-F', '/opt/janus/etc/janus/'])
     log('Started Janus')
@@ -227,7 +139,7 @@ def startAudio():
 
 def audioAvailable():
     out = subprocess.check_output(['arecord', '-l'])
-    return ('USB Audio' in out)
+    return (b'USB Audio' in out)
 
 def startAudioIfAvailable():
     if audioAvailable():
@@ -236,34 +148,10 @@ def startAudioIfAvailable():
         log('Audio not detected. Starting in silent mode')
 
 class BabyMonitorApp:
-    def startGstreamerVideo(self):
-
-        videosrc = '/dev/video0'
-
-        try:
-            out = subprocess.check_output(['v4l2-ctl', '--list-devices'])
-        except subprocess.CalledProcessError as e:
-            out = e.output
-
-        lines = out.splitlines()
-        for (idx, line) in enumerate(lines):
-            if 'bcm2835' in line:
-                nextline = lines[idx + 1]
-                videosrc = nextline.strip()
-
-        spawnNonDaemonProcess(reactor, LoggingProtocol('gstream-video'), '/bin/sh', ['sh', 'gstream_video.sh', videosrc])
-
-        log('Started gstreamer video using device %s' % videosrc)
-
     def __init__(self):
         queues = []
 
-        self.config = Config()
         self.reactor = reactor
-
-        self.motionDetectorStatusReader = MotionDetectionStatusReaderProtocol(self)
-        spawnNonDaemonProcess(reactor, self.motionDetectorStatusReader, 'python', ['python', 'MotionDetectionServer.py'])
-        log('Started motion detection process')
 
         factory = protocol.Factory()
         factory.protocol = JpegStreamReader
@@ -272,37 +160,26 @@ class BabyMonitorApp:
         reactor.listenTCP(9999, factory)
         log('Started listening for MJPEG stream')
 
-        root = File('api/v1')
-        root.putChild('stream.mjpeg', MJpegResource(queues))
-        root.putChild('latest.jpeg', LatestImageResource(factory))
-        root.putChild('status', StatusResource(self))
-        root.putChild('ping', PingResource())
-        root.putChild('getConfig', GetConfigResource(self))
-        root.putChild('updateConfig', UpdateConfigResource(self))
+        root = File('www')
+        root.putChild(b'ping', PingResource())
+        root.putChild(b'climate', ClimateResource())
+        root.putChild(b'stream.mjpeg', MJpegResource(queues))
+        root.putChild(b'latest.jpeg', LatestImageResource(factory))
 
         site = server.Site(root)
         PORT = 80
         BACKUP_PORT = 8080
 
-        portUsed = PORT
         try:
             reactor.listenTCP(PORT, site)
             log('Started webserver at port %d' % PORT)
         except twisted.internet.error.CannotListenError:
-            portUsed = BACKUP_PORT
             reactor.listenTCP(BACKUP_PORT, site)
             log('Started webserver at port %d' % BACKUP_PORT)
 
-        startZeroConfServer(portUsed)
-
         startAudioIfAvailable()
-
+        spawnNonDaemonProcess(reactor, LoggingProtocol('gstream-video'), '/bin/sh', ['sh', 'gstream_video.sh', '/dev/video0'])
         reactor.run()
-
-    def resetAfterConfigUpdate(self):
-        log('Updated config')
-        self.config.write()
-        self.motionDetectorStatusReader.reset()
 
 if __name__ == "__main__":
     import logging
@@ -311,4 +188,7 @@ if __name__ == "__main__":
     try:
         app = BabyMonitorApp()
     except:  # noqa: E722 (OK to use bare except)
+        import sys
+        type, value, traceback = sys.exc_info()
+        print('Error opening %s: %s' % (value.filename, value.strerror))
         logging.exception("main() threw exception")

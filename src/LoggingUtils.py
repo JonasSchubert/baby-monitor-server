@@ -1,10 +1,8 @@
 from datetime import datetime
 import logging
-import os.path
 from ProcessProtocolUtils import TerminalEchoProcessProtocol
 
 def log(msg):
-    tnow = datetime.now()
     logging.info('%s' % msg)
 
 def setupLogging():

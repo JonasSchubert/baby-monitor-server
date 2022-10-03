@@ -8,14 +8,14 @@ class TerminalEchoProcessProtocol(protocol.ProcessProtocol):
         self.errdata = ''
 
     def outLineReceived(self, line):
-        print line
+        print(line)
         sys.stdout.flush()
 
     def errLineReceived(self, line):
         print>>sys.stderr, line
 
     def outReceived(self, data):
-        self.outdata += data
+        self.outdata += data.decode("utf-8")
         lines = self.outdata.split('\n')
         for line in lines[:-1]:
             self.outLineReceived(line)
@@ -23,7 +23,7 @@ class TerminalEchoProcessProtocol(protocol.ProcessProtocol):
         self.outdata = lines[-1]
 
     def errReceived(self, data):
-        self.errdata += data
+        self.errdata += data.decode("utf-8")
         lines = self.errdata.split('\n')
         for line in lines[:-1]:
             self.errLineReceived(line)
