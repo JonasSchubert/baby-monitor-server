@@ -21,6 +21,8 @@ sudo apt-get install -y \
 #################################################
 sudo apt-get install -y \
     gstreamer1.0-good \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-alsa \
     gstreamer1.0-tools 
 
 #################################################
