@@ -128,14 +128,12 @@ class JpegStreamReader(protocol.Protocol):
             self.cumCalls = 0
 
 def startAudio():
-    spawnNonDaemonProcess(reactor, LoggingProtocol('janus'), '/opt/janus/bin/janus', ['janus', '-F', '/opt/janus/etc/janus/'])
-    log('Started Janus')
 
-    def startGstreamerAudio():
-        spawnNonDaemonProcess(reactor, LoggingProtocol('gstream-audio'), '/bin/sh', ['sh', 'gstream_audio.sh'])
-        log('Started gstreamer audio')
+    def startVlcAudio():
+        spawnNonDaemonProcess(reactor, LoggingProtocol('vlc-audio'), '/bin/sh', ['sh', 'vlc-audio.sh'])
+        log('Started vlc audio')
 
-    reactor.callLater(2, startGstreamerAudio)
+    reactor.callLater(2, startVlcAudio)
 
 def audioAvailable():
     out = subprocess.check_output(['arecord', '-l'])
