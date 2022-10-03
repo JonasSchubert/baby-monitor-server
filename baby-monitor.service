@@ -3,6 +3,7 @@ Description=Baby Monitor
 After=network.target
 
 [Service]
+User=jonasschubert
 ExecStart=/usr/bin/python BabyMonitor.py
 WorkingDirectory=/home/jonasschubert/projects/server/src/
 StandardOutput=inherit
