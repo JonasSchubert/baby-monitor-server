@@ -12,7 +12,7 @@ import subprocess
 from ProcessProtocolUtils import spawnNonDaemonProcess
 from LoggingUtils import log, setupLogging, LoggingProtocol
 from ClimateResource import ClimateResource
-from PingResource import PingResource
+from HealtcheckResource import HealtcheckResource
 
 def async_sleep(seconds):
     d = defer.Deferred()
@@ -159,7 +159,7 @@ class BabyMonitorApp:
         log('Started listening for MJPEG stream')
 
         root = File('www')
-        root.putChild(b'ping', PingResource())
+        root.putChild(b'healthcheck', HealtcheckResource())
         root.putChild(b'climate', ClimateResource())
         root.putChild(b'stream.mjpeg', MJpegResource(queues))
         root.putChild(b'latest.jpeg', LatestImageResource(factory))
