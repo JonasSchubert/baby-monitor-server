@@ -86,8 +86,8 @@ if __name__ == "__main__":
     log('Starting main method of baby monitor')
     try:
         app = BabyMonitorApp()
-    except:  # noqa: E722 (OK to use bare except)
+    except:
         import sys
-        type, value, traceback = sys.exc_info()
+        _, value, _ = sys.exc_info()
         print('Error opening %s: %s' % (value.filename, value.strerror))
         logging.exception("main() threw exception")
