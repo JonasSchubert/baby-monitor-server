@@ -69,12 +69,10 @@ class LullabySongResource(resource.Resource):
         track = ''
 
         if self.mediaplayer != None:
-            mute = self.mediaplayer.audio_get_mute()
             status = self.mediaplayer.get_state()
             track = self.mediaplayer.get_media().get_mrl()
-            volume = self.mediaplayer.audio_get_volume()
         
-        return { 'mute': mute, 'status': f'{status}', 'track': track, 'volume': volume }
+        return { 'mute': self.mute, 'status': f'{status}', 'track': track, 'volume': self.volume }
 
     def playSong(self, configuration):
         self.mediaplayer = vlc.MediaPlayer(configuration['track'])
