@@ -13,6 +13,7 @@ from JpegStreamReader import JpegStreamReader
 from ClimateResource import ClimateResource
 from HealtcheckResource import HealtcheckResource
 from LatestImageResource import LatestImageResource
+from LullabyListResource import LullabyListResource
 from MJpegResource import MJpegResource
 
 def async_sleep(seconds):
@@ -56,6 +57,7 @@ class BabyMonitorApp:
         root.putChild(b'climate', ClimateResource())
         root.putChild(b'stream.mjpeg', MJpegResource(queues))
         root.putChild(b'latest.jpeg', LatestImageResource(factory))
+        root.putChild(b'lullaby-list', LullabyListResource())
 
         site = server.Site(root)
         PORT = 80
