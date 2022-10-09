@@ -57,7 +57,7 @@ class LullabySongResource(resource.Resource):
         mute = False
         status = ''
         track = ''
-        volume = -1
+        volume = 30
 
         if self.mediaplayer != None:
             mute = self.mediaplayer.audio_get_mute()
