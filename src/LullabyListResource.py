@@ -7,6 +7,6 @@ class LullabyListResource(resource.Resource):
         request.setHeader("content-type", 'application/json')
         request.setHeader("Access-Control-Allow-Origin", '*')
 
-        files = glob.glob('/mnt/lullaby-songs/*.mp3')
+        files = glob.glob('/mnt/lullaby-songs/*')
 
         return json.dumps(files).encode('utf-8')
