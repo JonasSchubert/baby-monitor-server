@@ -19,7 +19,11 @@ class MJpegResource(resource.Resource):
 
     def render_GET(self, request):
         log('getting new client of image stream')
-        request.setHeader("content-type", 'multipart/x-mixed-replace; boundary=--spionisto')
+
+        request.setHeader('Content-type', 'multipart/x-mixed-replace; boundary=--spionisto')
+        request.setHeader('Access-Control-Allow-Origin', '*')
+        request.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTION')
+        request.setHeader('Access-Control-Allow-Headers', 'Content-type')
 
         self.setupProducer(request)
         return server.NOT_DONE_YET
