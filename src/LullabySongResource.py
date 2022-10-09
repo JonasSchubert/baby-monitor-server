@@ -5,6 +5,8 @@ import vlc
 class LullabySongResource(resource.Resource):
     def __init__(self):
         self.mediaplayer = None
+        self.mute = False
+        self.volume = 30
 
     def render_GET(self, request):
         request.setHeader('Content-type', 'application/json')
@@ -33,6 +35,8 @@ class LullabySongResource(resource.Resource):
         request.setHeader('Access-Control-Allow-Headers', 'Content-type')
 
         configuration = json.loads(request.content.read().decode('utf-8'))
+        self.mute = configuration['mute']
+        self.volume = configuration['volume']
 
         if configuration['track'] != '':
             if self.mediaplayer != None:
@@ -41,8 +45,8 @@ class LullabySongResource(resource.Resource):
                     self.stopSong()
                     self.playSong(configuration)
                 else:
-                    self.mediaplayer.audio_set_volume(configuration['volume'])
-                    self.mediaplayer.audio_set_mute(configuration['mute'])
+                    self.mediaplayer.audio_set_volume(self.volume)
+                    self.mediaplayer.audio_set_mute(self.mute)
                 newMediaplayer.release()
                 newMediaplayer = None
             else:
@@ -54,10 +58,8 @@ class LullabySongResource(resource.Resource):
         return json.dumps(self.getStatus()).encode('utf-8')
     
     def getStatus(self):
-        mute = False
         status = ''
         track = ''
-        volume = 30
 
         if self.mediaplayer != None:
             mute = self.mediaplayer.audio_get_mute()
@@ -69,8 +71,8 @@ class LullabySongResource(resource.Resource):
 
     def playSong(self, configuration):
         self.mediaplayer = vlc.MediaPlayer(configuration['track'])
-        self.mediaplayer.audio_set_volume(configuration['volume'])
-        self.mediaplayer.audio_set_mute(configuration['mute'])
+        self.mediaplayer.audio_set_volume(self.volume)
+        self.mediaplayer.audio_set_mute(self.mute)
         self.mediaplayer.play()
 
     def stopSong(self):
