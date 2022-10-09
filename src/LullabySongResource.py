@@ -34,28 +34,35 @@ class LullabySongResource(resource.Resource):
         request.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTION')
         request.setHeader('Access-Control-Allow-Headers', 'Content-type')
 
-        configuration = json.loads(request.content.read().decode('utf-8'))
-        self.mute = configuration['mute']
-        self.volume = configuration['volume']
+        try:
+            configuration = json.loads(request.content.read().decode('utf-8'))
+            self.mute = bool(configuration['mute'])
+            self.volume = int(configuration['volume'])
 
-        if configuration['track'] != '':
-            if self.mediaplayer != None:
-                newMediaplayer = vlc.MediaPlayer(configuration['track'])
-                if self.mediaplayer.get_media().get_mrl() != newMediaplayer.get_media().get_mrl():
-                    self.stopSong()
-                    self.playSong(configuration)
+            if configuration['track'] != '':
+                if self.mediaplayer != None:
+                    newMediaplayer = vlc.MediaPlayer(configuration['track'])
+                    if self.mediaplayer.get_media().get_mrl() != newMediaplayer.get_media().get_mrl():
+                        self.stopSong()
+                        self.playSong(configuration)
+                    else:
+                        self.mediaplayer.audio_set_volume(self.volume)
+                        self.mediaplayer.audio_set_mute(self.mute)
+                    newMediaplayer.release()
+                    newMediaplayer = None
                 else:
-                    self.mediaplayer.audio_set_volume(self.volume)
-                    self.mediaplayer.audio_set_mute(self.mute)
-                newMediaplayer.release()
-                newMediaplayer = None
+                    self.playSong(configuration)
             else:
-                self.playSong(configuration)
-        else:
-            if self.mediaplayer != None:
-                self.stopSong()
+                if self.mediaplayer != None:
+                    self.stopSong()
 
-        return json.dumps(self.getStatus()).encode('utf-8')
+            return json.dumps(self.getStatus()).encode('utf-8')
+        except:
+            import sys
+            _, value, _ = sys.exc_info()
+            print('Error opening %s: %s' % (value.filename, value.strerror))
+            self.mediaplayer = None
+            return json.dumps({ 'mute': False, 'status': 'Error', 'track': '', 'volume': -1 }).encode('utf-8')
     
     def getStatus(self):
         status = ''
