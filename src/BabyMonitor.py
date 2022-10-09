@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-from twisted.internet import reactor, protocol, defer
+from twisted.internet import reactor, protocol, defer, endpoints
 import twisted.internet.error
 from twisted.web import server
-from twisted.web.static import File
+from twisted.web.resource import Resource
+from twisted.web.server import Site
 
 import subprocess
 
@@ -14,6 +15,7 @@ from ClimateResource import ClimateResource
 from HealtcheckResource import HealtcheckResource
 from LatestImageResource import LatestImageResource
 from LullabyListResource import LullabyListResource
+from LullabySongResource import LullabySongResource
 from MJpegResource import MJpegResource
 
 def async_sleep(seconds):
@@ -52,22 +54,26 @@ class BabyMonitorApp:
         reactor.listenTCP(9999, factory)
         log('Started listening for MJPEG stream')
 
-        root = File('www')
+        root = Resource()
         root.putChild(b'healthcheck', HealtcheckResource())
         root.putChild(b'climate', ClimateResource())
         root.putChild(b'stream.mjpeg', MJpegResource(queues))
         root.putChild(b'latest.jpeg', LatestImageResource(factory))
         root.putChild(b'lullaby-list', LullabyListResource())
+        root.putChild(b'lullaby-song', LullabySongResource())
 
-        site = server.Site(root)
-        PORT = 80
-        BACKUP_PORT = 8080
+        site = Site(root)
+
+        PORT = 8080
+        BACKUP_PORT = 8081
 
         try:
-            reactor.listenTCP(PORT, site)
+            endpoint = endpoints.TCP4ServerEndpoint(reactor, PORT)
+            endpoint.listen(site)
             log('Started webserver at port %d' % PORT)
         except twisted.internet.error.CannotListenError:
-            reactor.listenTCP(BACKUP_PORT, site)
+            endpoint = endpoints.TCP4ServerEndpoint(reactor, BACKUP_PORT)
+            endpoint.listen(site)
             log('Started webserver at port %d' % BACKUP_PORT)
 
         startAudioIfAvailable()

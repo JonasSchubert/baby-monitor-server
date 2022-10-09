@@ -35,6 +35,7 @@ sudo sed -i "/^exit 0$/ i modprobe bcm2835-v4l2" /etc/rc.local
 #################################################
 pip3 install configparser
 pip3 install twisted
+pip3 install python-vlc
 
 #################################################
 #            Create lullaby song path           #
