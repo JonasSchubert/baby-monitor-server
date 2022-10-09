@@ -37,6 +37,11 @@ pip3 install configparser
 pip3 install twisted
 
 #################################################
+#            Create lullaby song path           #
+#################################################
+sudo mkdir /mnt/lullaby-songs
+
+#################################################
 #            Install systemd service            #
 #################################################
 sudo cp baby-monitor.service /lib/systemd/system/

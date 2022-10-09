@@ -1,0 +1,3 @@
+# TODO Must be added to your /etc/fstab => adjust the paths to your setup
+# RaspberryPi NAS 8TB Theatre music Lullaby-List
+//192.168.178.21/theatre/music/Lullaby-List /mnt/lullaby-songs cifs guest,_netdev 0 0
