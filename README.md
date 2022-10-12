@@ -1,16 +1,71 @@
+<div style="text-align: center;">
+<img height="128" src="./app.png">
+</div>
+
 # Baby Monitor - Server
 
-The server for my baby monitor. It utilizes [gstreamer](https://gstreamer.freedesktop.org/), [Grove SHT31 Temperature Humidity Sensor](https://github.com/Seeed-Studio/Grove_SHT31_Temp_Humi_Sensor), a simple USB microphone with some python code to provide a video and audio stream with an sensor API to check on your newborn.
+> !!!\
+> The [ui](https://code.sinthu-und-jonas.de/jsa/baby-monitor/ui) project is a good start to display the API provided data.\
+> !!!
+
+This projects aims to be the server for my baby monitor. It utilizes [gstreamer](https://gstreamer.freedesktop.org/), [Grove SHT31 Temperature Humidity Sensor](https://github.com/Seeed-Studio/Grove_SHT31_Temp_Humi_Sensor), a simple USB microphone with some python code to provide a video and audio stream with an sensor API to check on our newborn. Additionaly I am using the command line interface for VLC to play some lullabies.
 
 ## Instructions
 
 ### Raspberry Pi
 
-If you start with a fresh Raspberry Pi installation have a look at the [raspberry pi setup](./raspberry-pi-setup.sh) script. It might be useful for you, but is a bit outdated since I moved from a node API to a python project.
+#### Hardware
+
+I had my old [Snips Voice Interaction Base Kit](https://wiki.seeedstudio.com/Snips_Voice_Interaction_Base_Kit/) laying in one of my drawers, so I reused all this stuff to build this baby monitor. I slightly adjusted the used devices.
+
+- I removed the Relay (had no use for this)
+- My set came with a [ReSpeaker 4 Mic Linear Array](https://wiki.seeedstudio.com/ReSpeaker_4-Mic_Linear_Array_Kit_for_Raspberry_Pi/) - but I replaced this with a [simple USB microphone](https://makersportal.com/shop/usb-microphone-for-raspberry-pi); I wanted the microphone be closer to our baby, but the Raspberry Pi further away
+- I added the default [Raspberry Pi Camera module](https://projects.raspberrypi.org/en/projects/getting-started-with-picamera)
+
+#### Software
+
+I used the awesome [Raspberry Pi Sleep Monitor](https://github.com/srinathava/raspberry-pi-sleep-monitor) by [Srinathava](https://github.com/srinathava) as a starting point. It covered a lot, actually a little bit more then I needed. So I adjusted it.
+
+I am using the drivers for the [seeed-voicecard](https://github.com/HinTak/seeed-voicecard), the [Grove sensors](https://github.com/Seeed-Studio/grove), command line tools for VLC. Checkout the [install script](./install.sh) for more details. Gstream provides the camera stream. Twisted is used to build the API.
+
+Everyting is running directly on the Raspberry Pi - no container or any kind of virtualization.
 
 ### API
 
+The server itself provides six API endpoints. VLC provides an endpoint to access the audio stream:
+
+#### Camera
+
+The camera can be accessed under `http://<your-local-ip>:8080/stream.mjpeg`.
+It provides a stream of images provided by Gstreamer.
+
+#### Audio
+
 > TODO
+
+#### Single Picture
+
+If you want a single picture and always the latest one, this can be accessed under `http://<your-local-ip>:8080/latest.jpeg`.
+
+#### Climate
+
+> TODO
+
+#### Lullabies
+
+> TODO
+
+#### Healthcheck
+
+The server provides a simple healthcheck endpoint. Either you will have a result or none :P
+
+```json
+{
+  status: "up"
+}
+```
+
+You can request the status under `http://<your-local-ip>:8080/healthcheck`.
 
 ## Author
 
@@ -20,7 +75,7 @@ If you start with a fresh Raspberry Pi installation have a look at the [raspberr
 
 ## License
 
-Baby Monitor - Server is distributed under the MIT license. [See LICENSE](LICENSE) for details.
+`Baby Monitor - Server` is distributed under the MIT license. [See LICENSE](LICENSE) for details.
 
 ```
 MIT License
