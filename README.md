@@ -61,7 +61,7 @@ The server provides a simple healthcheck endpoint. Either you will have a result
 
 ```json
 {
-  status: "up"
+  "status": "up"
 }
 ```
 
