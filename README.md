@@ -41,7 +41,9 @@ It provides a stream of images provided by Gstreamer.
 
 #### Audio
 
-> TODO
+An audio stream is provided by the VLC command line tool. It starts streaming when the application starts on port `8081`.
+
+You can subscribe to this using following URL: `http://<your-local-ip>:8081`
 
 #### Single Picture
 
@@ -49,11 +51,131 @@ If you want a single picture and always the latest one, this can be accessed und
 
 #### Climate
 
-> TODO
+To read the current sensor data regarding humidity and temperature, perform a `GET` request against `http://<your-local-ip>:8080/climate`.
+
+You will receive following object:
+
+```json
+{
+  "humidity": {
+    "sensor": "number",
+    "unit": "%"
+  },
+  "temperature": {
+    "cpu": "number",
+    "gpu": "number",
+    "sensor": "number",
+    "unit": "°C"
+  }
+}
+```
+
+The units are always `%` for humidity and `°C` for temperature.
+
+- `sensor` contains the actual values from `Grove` sensor
+- `cpu` and `gpu` are the current temperatures for the processor - read with two different [commands](./src/ClimateResource.py)
 
 #### Lullabies
 
-> TODO
+There are two endpoints to handle lullabies.
+
+##### GET List
+
+The first endpoint will return a list of files under the defined path (`/mnt/lullaby-songs/`).
+
+Read them with a `GET` request against `http://<your-local-ip>:8080/lullaby-list`.
+
+You will receive a list of strings representing the file paths on your machine.
+
+```json
+[
+  "string"
+]
+```
+
+##### Handle Song
+
+The second endpoint allows to play or stop songs, adjust the volume or mute/unmute.
+
+You can perform a `GET` and a `POST` request against  `http://<your-local-ip>:8080/lullaby-song`.
+
+1. `GET`
+
+This endpoint returns the current state:
+
+```json
+{
+  "mute": boolean,
+  "status": "string",
+  "track": "string",
+  "volume": number
+}
+```
+
+2. `POST`
+
+If you want to play or stop a song you perform a `POST` request. Same for setting the volume or mute/unmute.
+
+The body has to have the same structure as the response from the `GET` request and will return the same format:
+
+```json
+{
+  "mute": boolean,
+  "status": "string",
+  "track": "string",
+  "volume": number
+}
+```
+
+To play a song, fill the property `track` with a path from the lullaby string list, set `mute` to `false` and the `volume` to something between `0...100`. (The `status` is a readonly field and has no effect) E.g.:
+
+```json
+{
+  "mute": false,
+  "status": "",
+  "track": "/mnt/lullaby-songs/babys-favorite-lullaby.mp3",
+  "volume": 35
+}
+```
+
+If the song exists it will start playing. If a song is already being played this will be stopped first.
+
+To stop a song, simply send a request body with an empty string for the track:
+
+```json
+{
+  "mute": false,
+  "status": "",
+  "track": "",
+  "volume": 35
+}
+```
+
+To mute a song, but keep it playing, send a similar body:
+
+```json
+{
+  "mute": true,
+  "status": "",
+  "track": "/mnt/lullaby-songs/babys-favorite-lullaby.mp3",
+  "volume": 35
+}
+```
+
+To change the volume, but keep a song playing, send a similar body:
+
+```json
+{
+  "mute": false,
+  "status": "",
+  "track": "/mnt/lullaby-songs/babys-favorite-lullaby.mp3",
+  "volume": 42
+}
+```
+
+> !!!\
+> Whenever the server receives a body with an empty track, it will stop playing! Always send the track, if you want to keep the song playing. Even if you just want to mute/unmute or set the volume! \
+> !!!
 
 #### Healthcheck
 
